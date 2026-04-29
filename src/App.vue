@@ -1,206 +1,200 @@
 <template>
-  <div class="min-h-screen bg-gray-50 text-gray-900">
-    <!-- Top Bar -->
-    <header class="bg-white border-b sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+  <div class="min-h-screen bg-gray-50">
+    <header class="sticky top-0 z-40 bg-white border-b shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
         <h1 class="text-3xl font-bold text-orange-600">Tharusha Store</h1>
 
-        <nav class="hidden md:flex gap-8 font-semibold">
-          <span class="text-orange-600 border-b-4 border-orange-500">Products</span>
-          <span>Categories</span>
-          <span>Worldwide</span>
-        </nav>
-
         <button
-          class="bg-orange-500 text-white px-5 py-2 rounded-full font-semibold"
+          @click="cartOpen = true"
+          class="relative bg-orange-500 text-white px-5 py-2 rounded-full font-bold"
         >
-          Cart {{ cart.length }}
+          🛒 Cart
+          <span class="ml-2 bg-white text-orange-600 px-2 rounded-full">
+            {{ cartItemCount }}
+          </span>
         </button>
       </div>
     </header>
 
-    <!-- Hero Search -->
     <section class="bg-gradient-to-r from-orange-50 via-white to-pink-50 py-12">
       <div class="max-w-5xl mx-auto px-4 text-center">
-        <h2 class="text-4xl md:text-5xl font-bold mb-3">
-          Find products for your business
-        </h2>
-        <p class="text-gray-500 mb-8">
-          Search electronics, beauty, groceries, furniture and more
-        </p>
+        <h2 class="text-4xl font-bold mb-6">Find products for your business</h2>
 
-        <div class="bg-white border-2 border-orange-400 rounded-3xl p-3 flex flex-col md:flex-row gap-3 shadow-lg">
+        <div class="bg-white border-2 border-orange-400 rounded-3xl p-3 flex gap-3 shadow-lg">
           <input
             v-model="searchText"
             type="text"
             placeholder="Search products..."
             class="flex-1 px-5 py-4 outline-none text-lg"
           />
-
-          <button class="bg-orange-500 hover:bg-orange-600 text-white px-10 py-4 rounded-2xl font-bold">
+          <button class="bg-orange-500 text-white px-8 py-3 rounded-2xl font-bold">
             Search
           </button>
         </div>
       </div>
     </section>
 
-    <!-- Main -->
     <main class="max-w-7xl mx-auto px-4 py-8">
-      <!-- Filters -->
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div class="flex justify-between items-center mb-6">
         <h3 class="text-3xl font-bold">Hot Picks</h3>
 
-        <select
-          v-model="selectedCategory"
-          class="bg-white border rounded-xl px-4 py-3 shadow-sm"
-        >
+        <select v-model="selectedCategory" class="bg-white border rounded-xl px-4 py-3">
           <option value="">All Categories</option>
-          <option
-            v-for="category in categories"
-            :key="category"
-            :value="category"
-          >
+          <option v-for="category in categories" :key="category" :value="category">
             {{ category }}
           </option>
         </select>
       </div>
 
-      <!-- Products -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div
           v-for="product in filteredProducts"
           :key="product.id"
           class="bg-white rounded-2xl shadow hover:shadow-xl transition overflow-hidden"
         >
-          <img
-            :src="product.thumbnail"
-            class="w-full h-48 object-cover bg-gray-100"
-          />
+          <img :src="product.thumbnail" class="w-full h-48 object-cover bg-gray-100" />
 
           <div class="p-4">
-            <p class="text-xs uppercase text-orange-600 font-bold mb-1">
-              {{ product.category }}
-            </p>
+            <p class="text-xs uppercase text-orange-600 font-bold">{{ product.category }}</p>
+            <h4 class="font-bold text-lg mt-1">{{ product.title }}</h4>
+            <p class="text-gray-500 text-sm line-clamp-2 mt-1">{{ product.description }}</p>
 
-            <h4 class="font-bold text-lg line-clamp-1">
-              {{ product.title }}
-            </h4>
-
-            <p class="text-sm text-gray-500 line-clamp-2 mt-1">
-              {{ product.description }}
-            </p>
-
-            <div class="flex items-center justify-between mt-4">
-              <p class="text-2xl font-bold text-orange-600">
-                ${{ product.price }}
-              </p>
-
-              <p class="text-sm text-gray-500">
-                ⭐ {{ product.rating }}
-              </p>
+            <div class="flex justify-between items-center mt-4">
+              <p class="text-2xl font-bold text-orange-600">${{ product.price }}</p>
+              <p class="text-sm text-gray-500">⭐ {{ product.rating }}</p>
             </div>
 
-            <div class="flex gap-2 mt-4">
-              <button
-                @click="selectedProduct = product"
-                class="flex-1 border border-orange-500 text-orange-600 py-2 rounded-xl font-semibold"
-              >
-                View
-              </button>
-
-              <button
-                @click="addToCart(product)"
-                class="flex-1 bg-orange-500 text-white py-2 rounded-xl font-semibold"
-              >
-                Add Cart
-              </button>
-            </div>
+            <button
+              @click="addToCart(product)"
+              class="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold"
+            >
+              Add to Cart
+            </button>
           </div>
         </div>
       </div>
-
-      <p
-        v-if="filteredProducts.length === 0"
-        class="text-center text-gray-500 mt-10"
-      >
-        No products found.
-      </p>
     </main>
 
-    <!-- Product Detail Modal -->
-    <div
-      v-if="selectedProduct"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-    >
-      <div class="bg-white max-w-2xl w-full rounded-3xl p-6 relative">
-        <button
-          @click="selectedProduct = null"
-          class="absolute top-4 right-4 text-2xl"
-        >
-          ×
-        </button>
+    <!-- Attractive Cart Drawer -->
+    <div v-if="cartOpen" class="fixed inset-0 z-50">
+      <div
+        @click="cartOpen = false"
+        class="absolute inset-0 bg-black/50"
+      ></div>
 
-        <img
-          :src="selectedProduct.thumbnail"
-          class="w-full h-64 object-cover rounded-2xl bg-gray-100"
-        />
+      <aside class="absolute right-0 top-0 h-full w-full sm:w-[430px] bg-white shadow-2xl flex flex-col">
+        <div class="p-5 border-b flex justify-between items-center bg-orange-50">
+          <div>
+            <h2 class="text-2xl font-bold">Shopping Cart</h2>
+            <p class="text-gray-500 text-sm">{{ cartItemCount }} items selected</p>
+          </div>
 
-        <h2 class="text-3xl font-bold mt-4">
-          {{ selectedProduct.title }}
-        </h2>
+          <button
+            @click="cartOpen = false"
+            class="text-3xl font-bold text-gray-500 hover:text-red-500"
+          >
+            ×
+          </button>
+        </div>
 
-        <p class="text-gray-600 mt-2">
-          {{ selectedProduct.description }}
-        </p>
+        <div class="flex-1 overflow-y-auto p-5">
+          <div v-if="cart.length === 0" class="text-center mt-20">
+            <div class="text-6xl mb-4">🛒</div>
+            <h3 class="text-xl font-bold">Your cart is empty</h3>
+            <p class="text-gray-500 mt-2">Add products to see them here.</p>
+          </div>
 
-        <p class="text-orange-600 text-3xl font-bold mt-4">
-          ${{ selectedProduct.price }}
-        </p>
+          <div
+            v-for="item in cart"
+            :key="item.product.id"
+            class="flex gap-4 border rounded-2xl p-3 mb-4 shadow-sm"
+          >
+            <img
+              :src="item.product.thumbnail"
+              class="w-24 h-24 object-cover rounded-xl bg-gray-100"
+            />
 
-        <button
-          @click="addToCart(selectedProduct)"
-          class="mt-5 w-full bg-orange-500 text-white py-3 rounded-xl font-bold"
-        >
-          Add to Cart
-        </button>
-      </div>
+            <div class="flex-1">
+              <h4 class="font-bold line-clamp-1">{{ item.product.title }}</h4>
+              <p class="text-orange-600 font-bold mt-1">${{ item.product.price }}</p>
+
+              <div class="flex items-center gap-3 mt-3">
+                <button
+                  @click="decreaseQty(item.product.id)"
+                  class="w-8 h-8 rounded-full bg-gray-200 font-bold"
+                >
+                  -
+                </button>
+
+                <span class="font-bold">{{ item.quantity }}</span>
+
+                <button
+                  @click="increaseQty(item.product.id)"
+                  class="w-8 h-8 rounded-full bg-orange-500 text-white font-bold"
+                >
+                  +
+                </button>
+
+                <button
+                  @click="removeFromCart(item.product.id)"
+                  class="ml-auto text-red-500 text-sm font-bold"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t p-5 bg-gray-50">
+          <div class="flex justify-between text-lg mb-2">
+            <span>Subtotal</span>
+            <span class="font-bold">${{ totalPrice }}</span>
+          </div>
+
+          <div class="flex justify-between text-sm text-gray-500 mb-4">
+            <span>Delivery</span>
+            <span>Free</span>
+          </div>
+
+          <div class="flex justify-between text-2xl font-bold border-t pt-4">
+            <span>Total</span>
+            <span class="text-orange-600">${{ totalPrice }}</span>
+          </div>
+
+          <button
+            class="w-full mt-5 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold"
+          >
+            Checkout
+          </button>
+
+          <button
+            v-if="cart.length > 0"
+            @click="clearCart"
+            class="w-full mt-3 border border-red-400 text-red-500 py-3 rounded-xl font-bold"
+          >
+            Clear Cart
+          </button>
+        </div>
+      </aside>
     </div>
-
-    <!-- Cart Section -->
-    <section class="max-w-7xl mx-auto px-4 pb-10">
-      <div class="bg-white rounded-2xl shadow p-5">
-        <h3 class="text-2xl font-bold mb-4">Shopping Cart</h3>
-
-        <p v-if="cart.length === 0" class="text-gray-500">
-          Cart is empty.
-        </p>
-
-        <div
-          v-for="item in cart"
-          :key="item.id"
-          class="flex justify-between border-b py-3"
-        >
-          <span>{{ item.title }}</span>
-          <span class="font-bold">${{ item.price }}</span>
-        </div>
-
-        <div class="text-right text-xl font-bold mt-4">
-          Total: ${{ totalPrice }}
-        </div>
-      </div>
-    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue"
+import { computed, onMounted, ref, watch } from "vue"
 import type { Product, ProductResponse } from "./types/product"
+
+interface CartItem {
+  product: Product
+  quantity: number
+}
 
 const products = ref<Product[]>([])
 const searchText = ref("")
 const selectedCategory = ref("")
-const selectedProduct = ref<Product | null>(null)
-const cart = ref<Product[]>([])
+const cartOpen = ref(false)
+const cart = ref<CartItem[]>([])
 
 const categories = computed(() => {
   return [...new Set(products.value.map((product) => product.category))]
@@ -213,27 +207,71 @@ const filteredProducts = computed(() => {
       .includes(searchText.value.toLowerCase())
 
     const matchCategory =
-      selectedCategory.value === "" ||
-      product.category === selectedCategory.value
+      selectedCategory.value === "" || product.category === selectedCategory.value
 
     return matchSearch && matchCategory
   })
 })
 
+const cartItemCount = computed(() => {
+  return cart.value.reduce((sum, item) => sum + item.quantity, 0)
+})
+
 const totalPrice = computed(() => {
-  return cart.value.reduce((sum, item) => sum + item.price, 0)
+  return cart.value
+    .reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+    .toFixed(2)
 })
 
 function addToCart(product: Product) {
-  cart.value.push(product)
-  localStorage.setItem("cart", JSON.stringify(cart.value))
+  const existingItem = cart.value.find((item) => item.product.id === product.id)
+
+  if (existingItem) {
+    existingItem.quantity++
+  } else {
+    cart.value.push({ product, quantity: 1 })
+  }
+
+  cartOpen.value = true
 }
 
-onMounted(async () => {
-  const savedCart = localStorage.getItem("cart")
+function increaseQty(productId: number) {
+  const item = cart.value.find((cartItem) => cartItem.product.id === productId)
+  if (item) item.quantity++
+}
 
+function decreaseQty(productId: number) {
+  const item = cart.value.find((cartItem) => cartItem.product.id === productId)
+
+  if (!item) return
+
+  if (item.quantity > 1) {
+    item.quantity--
+  } else {
+    removeFromCart(productId)
+  }
+}
+
+function removeFromCart(productId: number) {
+  cart.value = cart.value.filter((item) => item.product.id !== productId)
+}
+
+function clearCart() {
+  cart.value = []
+}
+
+watch(
+  cart,
+  () => {
+    localStorage.setItem("tharusha-cart", JSON.stringify(cart.value))
+  },
+  { deep: true }
+)
+
+onMounted(async () => {
+  const savedCart = localStorage.getItem("tharusha-cart")
   if (savedCart) {
-    cart.value = JSON.parse(savedCart) as Product[]
+    cart.value = JSON.parse(savedCart) as CartItem[]
   }
 
   const res = await fetch("https://dummyjson.com/products")
